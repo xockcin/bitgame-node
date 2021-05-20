@@ -22,11 +22,11 @@ const doToken = (number, token) => {
   }
 };
 
-let grid = [...Array(SIZE)].map((e) => Array(SIZE));
-
+//initialize solutions grid
+let solutionsGrid = [...Array(SIZE)].map((e) => Array(SIZE));
 for (let i = 0; i < SIZE; i++) {
   for (let j = 0; j < SIZE; j++) {
-    grid[i][j] = {
+    solutionsGrid[i][j] = {
       origin: i,
       result: j,
       solution: "none"
@@ -34,55 +34,67 @@ for (let i = 0; i < SIZE; i++) {
   }
 }
 
+// in pairs where the origin and goal are the 
+// same number, set the solution to an empty string
 const zeroSteps = () => {
   for (let i = 0; i < SIZE; i++) {
-    grid[i][i].solution = ""
+    solutionsGrid[i][i].solution = ""
   }
 }
 
+// do all one-step solutions
 const oneSteps = () => {
   for (let i = 0; i < SIZE; i++) {
     for (token of TOKENS) {
       const result = doToken(i, token)
-      if (grid[i][result].solution === "none") {
-        grid[i][result].solution = token
+      if (solutionsGrid[i][result].solution === "none") {
+        solutionsGrid[i][result].solution = token
       }
     }
   }
 }
 
+// does a new "step" every time you run it.
+// so the first time it does all the two-step
+// solutions, the second time it does all the
+// three-step solutions, and so on.
 const addSteps = () => {
-  const solved = _.flatten(grid).filter((item) => item.solution != "none")
-  for (item of solved) {
-    prevOrigin = item.origin
-    prevResult = item.result
-    prevSolution = item.solution
+  // flat array containing all solved pairs
+  const solvedPairs = _.flatten(solutionsGrid).filter((item) => item.solution != "none")
+  for (pair of solvedPairs) {
+    // build each new solution atop an existing one
+    const {origin, result, solution} = pair
     for (token of TOKENS) {
-      const newResult = doToken(prevResult, token)
-      if (grid[prevOrigin][newResult].solution === "none") {
-        grid[prevOrigin][newResult].solution = prevSolution + token
+      const newResult = doToken(result, token)
+      if (solutionsGrid[origin][newResult].solution === "none") {
+        solutionsGrid[origin][newResult].solution = solution + token
       }
     }
   }
 }
 
+// starts by doing zersteps and onesteps, then
+// does addsteps over and over until there are
+// no more unsolved, and returns the number of
+// steps.
 const getAllSolutions = () => {
   zeroSteps()
   oneSteps()
-  let steps = 1
+  let steps = 2
   //i.e. while there are still any unsolved pairs
-  while (_.flatten(grid).filter((item) => item.solution === "none").length > 0) {
+  while (_.flatten(solutionsGrid).filter((item) => item.solution === "none").length > 0) {
     addSteps()
     steps++
   }
   return steps
 }
 
-const maxLength = getAllSolutions()
+// run getallsolutions and save number of steps
+const maxLengthPlusOne = getAllSolutions()
 
 const getStats = (pairs) => {
   const stats = {}
-  for (let i = 0; i <= maxLength; i++) {
+  for (let i = 0; i < maxLengthPlusOne; i++) {
     stats[i.toString()] = 0
   }
   for (item of pairs) {
@@ -92,5 +104,20 @@ const getStats = (pairs) => {
   return stats
 }
 
-const myStats = getStats(solved)
-console.log(myStats)
+const pairsBySize = (pairs) => {
+    const stats = {};
+    for (let i = 0; i < maxLengthPlusOne; i++) {
+      stats[i.toString()] = []
+    }
+    for (item of pairs) {
+      const stepCount = item.solution.length
+      stats[stepCount].push(item)
+    }
+    return stats;
+}
+
+const allPairs = _.flatten(solutionsGrid)
+const myStats = getStats(allPairs)
+const bySize = pairsBySize(allPairs)
+
+console.log(allPairs)
