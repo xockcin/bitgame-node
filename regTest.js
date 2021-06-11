@@ -1,17 +1,17 @@
-const TOKENS = ["&","|","^"]
+const regTokens = ["&","|","^"]
 const SIZE = 16
 
 const _ = require("lodash");
 
-let grid = [...Array(SIZE)].map((e) => Array(SIZE));
+let regGrid = [...Array(SIZE)].map((e) => Array(SIZE));
 
 for (let i = 0; i < SIZE; i++) {
   for (let j = 0; j < SIZE; j++) {
-    grid[i][j] = {
+    regGrid[i][j] = {
       regOne: i,
       regTwo: j,
-      results: []
-    }
+      results: [],
+    };
   }
 }
 
@@ -28,7 +28,7 @@ doRegToken = (number,register, token) => {
 
 for (let i = 0; i < SIZE; i++) {
   for (let j = 0; j < SIZE; j++) {
-    for (token of TOKENS) {
+    for (token of regTokens) {
       const result = doRegToken(i,j,token)
       grid[i][j].results.push([token, result])
     }
